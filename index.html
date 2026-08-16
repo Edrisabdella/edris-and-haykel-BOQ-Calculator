@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EEBCEC – EastEdge BoQ Calculator Pro</title>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+    </script>
+
+    <style>
+        /* ===== ROOT VARIABLES ===== */
+        :root {
+            --primary: #003366;
+            --primary-light: #1a4c7a;
+            --secondary: #f4a261;
+            --secondary-dark: #e76f51;
+            --accent: #2a9d8f;
+            --white: #ffffff;
+            --light-bg: #f4f6f9;
+            --gray-100: #f0f2f5;
+            --gray-200: #e2e6ea;
+            --gray-300: #ced4da;
+            --gray-600: #6c757d;
+            --gray-800: #343a40;
+            --dark: #1a1a2e;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.18);
+            --radius: 12px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--light-bg);
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 12px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-wrap img {
+            height: 52px;
+            width: auto;
+            border-radius: 6px;
+            background: var(--white);
+            padding: 4px;
+        }
+
+        .logo-wrap .brand {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+        .logo-wrap .brand small {
+            font-weight: 400;
+            font-size: 0.7rem;
+            opacity: 0.85;
+            display: block;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .header-actions .badge-date {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-actions .badge-date i {
+            margin-right: 6px;
+            color: var(--secondary);
+        }
+
+        /* ===== HERO SLIDER ===== */
+        .hero {
+            height: 58vh;
+            min-height: 340px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            transition: background-image 1.2s ease-in-out;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 51, 102, 0.78) 0%, rgba(0, 0, 0, 0.55) 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 20px 30px;
+            max-width: 820px;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2rem, 5vw, 3.6rem);
+            font-weight: 800;
+            color: var(--white);
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            margin-bottom: 8px;
+        }
+
+        .hero-content h1 span {
+            color: var(--secondary);
+        }
+
+        .hero-content p {
+            font-size: clamp(1rem, 1.4vw, 1.3rem);
+            color: rgba(255, 255, 255, 0.92);
+            font-weight: 300;
+            letter-spacing: 0.3px;
+        }
+
+        .hero-content .hero-tag {
+            display: inline-block;
+            margin-top: 14px;
+            background: var(--secondary);
+            color: var(--dark);
+            padding: 6px 24px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===== MAIN CALCULATOR ===== */
+        .main-wrapper {
+            max-width: 1320px;
+            margin: -40px auto 30px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .calc-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 30px 35px 40px;
+            transition: var(--transition);
+        }
+
+        .calc-card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .calc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 28px;
+            border-bottom: 2px solid var(--gray-100);
+            padding-bottom: 18px;
+        }
+
+        .calc-header h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .calc-header h2 i {
+            color: var(--secondary);
+        }
+
+        .calc-header .step-indicator {
+            display: flex;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-600);
+        }
+        .calc-header .step-indicator .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--gray-300);
+        }
+        .calc-header .step-indicator .dot.active {
+            background: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(244, 162, 97, 0.3);
+        }
+
+        /* ===== FORM GRID ===== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px 24px;
+            margin-bottom: 28px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group label i {
+            color: var(--secondary);
+            width: 18px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 11px 14px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            background: var(--white);
+            transition: var(--transition);
+            width: 100%;
+            color: var(--gray-800);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0, 51, 102, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: var(--gray-300);
+            font-weight: 400;
+        }
+
+        .form-hint {
+            font-size: 0.7rem;
+            color: var(--gray-600);
+            margin-top: 2px;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .btn {
+            padding: 13px 32px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1 1 auto;
+            min-width: 160px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 51, 102, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--dark);
+        }
+        .btn-secondary:hover {
+            background: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(244, 162, 97, 0.35);
+            color: var(--white);
+        }
+
+        .btn-success {
+            background: var(--accent);
+            color: var(--white);
+        }
+        .btn-success:hover {
+            background: #21867a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(42, 157, 143, 0.35);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* ===== RESULT AREA ===== */
+        #result-area {
+            display: none;
+            margin-top: 32px;
+            border-top: 2px solid var(--gray-100);
+            padding-top: 28px;
+        }
+
+        .result-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .result-stat {
+            background: var(--gray-100);
+            border-radius: 10px;
+            padding: 16px 20px;
+            text-align: center;
+        }
+
+        .result-stat .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-600);
+            font-weight: 600;
+        }
+
+        .result-stat .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .result-stat .value .currency {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* ===== BOQ TABLE ===== */
+        .boq-table-wrap {
+            overflow-x: auto;
+            margin: 18px 0 10px;
+            border-radius: 10px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .boq-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 700px;
+        }
+
+        .boq-table thead {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .boq-table thead th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .boq-table tbody td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--gray-200);
+            vertical-align: middle;
+        }
+
+        .boq-table tbody tr:hover {
+            background: rgba(0, 51, 102, 0.03);
+        }
+
+        .boq-table tbody tr.category-row {
+            background: var(--gray-100);
+            font-weight: 700;
+        }
+
+        .boq-table tbody tr.category-row td {
+            border-bottom: 2px solid var(--gray-300);
+        }
+
+        .boq-table .text-right {
+            text-align: right;
+        }
+        .boq-table .text-center {
+            text-align: center;
+        }
+
+        .boq-table .total-row {
+            background: var(--primary);
+            color: var(--white);
+            font-weight: 700;
+        }
+        .boq-table .total-row td {
+            border-bottom: none;
+            padding: 14px 16px;
+        }
+
+        .boq-table .subtotal-row {
+            background: var(--gray-200);
+            font-weight: 600;
+        }
+
+        /* ===== PAYMENT SECTION ===== */
+        .payment-section {
+            background: var(--primary);
+            color: var(--white);
+            padding: 44px 30px;
+            margin-top: 50px;
+            border-radius: var(--radius);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .payment-section h3 {
+            font-size: 1.4rem;
+            color: var(--secondary);
+            margin-bottom: 6px;
+        }
+
+        .payment-section p {
+            opacity: 0.85;
+            font-size: 0.95rem;
+        }
+
+        .payment-methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px 28px;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .payment-methods .method {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .payment-methods .method i {
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+
+        .payment-methods .method .highlight {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: var(--dark);
+            color: #b0b0c0;
+            padding: 40px 30px 28px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        footer .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        footer h4 {
+            color: var(--white);
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+        }
+
+        footer .sub {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 16px;
+        }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px 18px;
+            margin: 14px 0 18px;
+        }
+
+        .social-links a {
+            color: var(--gray-300);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .social-links a:hover {
+            color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        footer .credit {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 16px;
+        }
+
+        footer .credit strong {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            header {
+                padding: 10px 16px;
+            }
+            .logo-wrap .brand {
+                font-size: 0.9rem;
+            }
+            .logo-wrap img {
+                height: 40px;
+            }
+            .header-actions .badge-date {
+                font-size: 0.65rem;
+                padding: 4px 12px;
+            }
+            .calc-card {
+                padding: 20px 16px 30px;
+            }
+            .calc-header h2 {
+                font-size: 1.2rem;
+            }
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+            }
+            .btn-row {
+                flex-direction: column;
+            }
+            .btn {
+                min-width: unset;
+                width: 100%;
+            }
+            .payment-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+                padding: 30px 18px;
+            }
+            .payment-methods {
+                justify-content: center;
+            }
+            .hero {
+                height: 40vh;
+                min-height: 260px;
+            }
+            .hero-content h1 {
+                font-size: 1.8rem;
+            }
+            .result-summary {
+                grid-template-columns: 1fr 1fr;
+            }
+            .boq-table {
+                font-size: 0.8rem;
+                min-width: 560px;
+            }
+            .boq-table thead th,
+            .boq-table tbody td {
+                padding: 8px 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .result-summary {
+                grid-template-columns: 1fr;
+            }
+            .hero-content h1 {
+                font-size: 1.4rem;
+            }
+            .header-actions .badge-date {
+                display: none;
+            }
+        }
+
+        /* ===== UTILITY ===== */
+        .text-muted {
+            color: var(--gray-600);
+        }
+        .fw-700 {
+            font-weight: 700;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .d-flex {
+            display: flex;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .align-center {
+            align-items: center;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+        }
+
+        /* Print styles */
+        @media print {
+            .hero,
+            header,
+            .btn-row,
+            .payment-section,
+            footer,
+            .no-print {
+                display: none !important;
+            }
+            .main-wrapper {
+                margin: 0;
+                padding: 0;
+            }
+            .calc-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                padding: 20px;
+            }
+            #result-area {
+                display: block !important;
+            }
+            .boq-table-wrap {
+                border: 1px solid #ccc;
+            }
+            .boq-table thead {
+                background: #003366 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .boq-table .total-row {
+                background: #003366 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .result-stat {
+                background: #f0f0f0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header>
+        <div class="logo-wrap">
+            <img src="https://i.ibb.co/d0R8m7hd/MY-BEST-LOGO-FOR-BOQ-CALCULATOR-APP.png" alt="EEBCEC Logo" />
+            <div class="brand">
+                EastEdge Engineering
+                <small>BoQ CALCULATOR · EEBCEC</small>
+            </div>
+        </div>
+        <div class="header-actions">
+            <span class="badge-date"><i class="fas fa-calendar-alt"></i> August 2026 Pricing</span>
+            <span class="badge-date"><i class="fas fa-map-marker-alt"></i> Ethiopia</span>
+        </div>
+    </header>
+
+    <!-- ===== HERO SLIDER ===== -->
+    <div class="hero" id="heroSlider">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>EastEdge <span>BoQ</span> Pro</h1>
+            <p>Precision Bill of Quantities for Ethiopian Construction — <br />Substructure to Finishing, Itemized &amp; Transparent.</p>
+            <span class="hero-tag"><i class="fas fa-calculator"></i> Powered by Edris &amp; Haykel Standards</span>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CALCULATOR ===== -->
+    <div class="main-wrapper">
+        <div class="calc-card">
+
+            <!-- Header -->
+            <div class="calc-header">
+                <h2><i class="fas fa-cubes"></i> Project Cost Estimator</h2>
+                <div class="step-indicator">
+                    <span>Step 1</span>
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label><i class="fas fa-city"></i> Project Location</label>
+                    <select id="projectCity">
+                        <option value="1.00">Dire Dawa</option>
+                        <option value="1.05" selected>Addis Ababa</option>
+                        <option value="0.95">Other Regions</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-building"></i> Building Type</label>
+                    <select id="buildingType">
+                        <option value="residential">Residential (G+0 – G+2)</option>
+                        <option value="commercial" selected>Commercial (G+4+)</option>
+                        <option value="warehouse">Warehouse / Industrial</option>
+                        <option value="institutional">Institutional (School, Hospital)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-arrows-alt-h"></i> Total Floor Area (m²)</label>
+                    <input type="number" id="totalArea" placeholder="e.g. 500" min="1" step="1" />
+                    <span class="form-hint">Built-up area in square meters</span>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-paint-roller"></i> Finishing Level</label>
+                    <select id="finishLevel">
+                        <option value="1.00">Standard</option>
+                        <option value="1.20">Premium / Luxury</option>
+                        <option value="0.85">Basic / Shell</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-layer-group"></i> Number of Floors</label>
+                    <input type="number" id="numFloors" placeholder="e.g. 4" min="1" step="1" value="4" />
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-trowel"></i> Construction Type</label>
+                    <select id="constructionType">
+                        <option value="rc" selected>Reinforced Concrete (RC)</option>
+                        <option value="steel">Steel Structure</option>
+                        <option value="mixed">Mixed (RC + Steel)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="calculateBoQ()">
+                    <i class="fas fa-calculator"></i> Generate BoQ
+                </button>
+                <button class="btn btn-success" id="exportExcelBtn" onclick="exportToExcel()" disabled>
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </button>
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-undo"></i> Reset
+                </button>
+                <button class="btn btn-outline" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+
+            <!-- ===== RESULTS ===== -->
+            <div id="result-area">
+
+                <!-- Summary Stats -->
+                <div class="result-summary" id="summaryStats">
+                    <div class="result-stat">
+                        <div class="label">Total Estimated Cost</div>
+                        <div class="value" id="totalCostDisplay">0.00 <span class="currency">ETB</span></div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="label">Cost per m²</div>
+                        <div class="value" id="costPerSqm">0.00 <span class="currency">ETB</span></div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="label">Building Type</div>
+                        <div class="value" id="buildingTypeDisplay" style="font-size:1.1rem;">—</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="label">Location Factor</div>
+                        <div class="value" id="locationFactorDisplay">1.00</div>
+                    </div>
+                </div>
+
+                <!-- BoQ Table -->
+                <h4 style="margin: 10px 0 12px; display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-list-ul" style="color:var(--secondary);"></i>
+                    Itemized Bill of Quantities
+                    <span style="font-weight:400; font-size:0.75rem; color:var(--gray-600); margin-left:auto;">
+                        <i class="fas fa-info-circle"></i> Rates in ETB
+                    </span>
+                </h4>
+                <div class="boq-table-wrap">
+                    <table class="boq-table" id="boqTable">
+                        <thead>
+                            <tr>
+                                <th style="width:5%;">#</th>
+                                <th style="width:30%;">Description</th>
+                                <th style="width:12%;">Unit</th>
+                                <th style="width:14%;">Quantity</th>
+                                <th style="width:16%;">Rate (ETB)</th>
+                                <th style="width:23%;">Amount (ETB)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="boqBody">
+                            <!-- rows inserted by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Grand Total Note -->
+                <div style="display:flex; justify-content:flex-end; margin-top:12px; gap:24px; flex-wrap:wrap;">
+                    <div><strong>Subtotal:</strong> <span id="subtotalDisplay">0.00</span> ETB</div>
+                    <div><strong>Contingency (5%):</strong> <span id="contingencyDisplay">0.00</span> ETB</div>
+                    <div style="font-size:1.2rem; color:var(--primary);">
+                        <strong>Grand Total:</strong> <span id="grandTotalDisplay">0.00</span> ETB
+                    </div>
+                </div>
+
+                <div style="margin-top:14px; font-size:0.8rem; color:var(--gray-600); border-top:1px solid var(--gray-200); padding-top:14px; display:flex; justify-content:space-between; flex-wrap:wrap;">
+                    <span><i class="fas fa-calendar-alt"></i> Pricing base: <strong>August 2026</strong> · Ethiopian market indices</span>
+                    <span><i class="fas fa-check-circle" style="color:var(--accent);"></i> Includes material, labor &amp; equipment</span>
+                </div>
+            </div>
+            <!-- /result-area -->
+
+        </div>
+        <!-- /calc-card -->
+    </div>
+    <!-- /main-wrapper -->
+
+    <!-- ===== PAYMENT SECTION ===== -->
+    <div class="main-wrapper" style="margin-top:0;">
+        <div class="payment-section">
+            <div>
+                <h3><i class="fas fa-credit-card"></i> Premium Services</h3>
+                <p>Unlock detailed Excel exports, itemized breakdowns, and full professional formatting.</p>
+                <p style="margin-top:6px; font-size:0.9rem;">
+                    <i class="fas fa-shield-alt" style="color:var(--secondary);"></i> Secure · Transparent · Trusted
+                </p>
+            </div>
+            <div>
+                <div class="payment-methods">
+                    <span class="method"><i class="fas fa-mobile-alt"></i> <span class="highlight">eBirr</span></span>
+                    <span class="method"><i class="fas fa-mobile-alt"></i> <span class="highlight">CBEBirr</span></span>
+                    <span class="method"><i class="fas fa-mobile-alt"></i> <span class="highlight">Telebirr</span></span>
+                </div>
+                <div style="margin-top:12px; font-size:0.9rem; opacity:0.9;">
+                    <i class="fas fa-user-circle"></i> Account: <strong>Edris Abdella Nuure</strong>
+                    &nbsp;·&nbsp; <i class="fas fa-phone"></i> <strong>+251905131051</strong>
+                </div>
+                <div style="margin-top:4px; font-size:0.75rem; opacity:0.6;">
+                    <i class="fas fa-building"></i> Edris &amp; Haykel Construction Partnership PLC
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="footer-inner">
+            <h4>EastEdge Engineering BoQ Calculator</h4>
+            <div class="sub">For Ethiopian Construction Cost · EEBCEC v2.0</div>
+
+            <div class="social-links">
+                <a href="https://t.me/eastedge_engineering" target="_blank"><i class="fab fa-telegram-plane"></i> Telegram</a>
+                <a href="https://www.linkedin.com/in/edris-abdella-nuure-7aa521177" target="_blank"><i class="fab fa-linkedin-in"></i> LinkedIn</a>
+                <a href="https://wa.me/qr/FPJETXYVTS5YE1" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                <a href="https://www.facebook.com/edrisabdella28" target="_blank"><i class="fab fa-facebook-f"></i> Facebook</a>
+                <a href="https://www.instagram.com/edrisabdella28?igsh=dWxpdHZoNjdoaHg2" target="_blank"><i class="fab fa-instagram"></i> Instagram</a>
+                <a href="https://github.com/Edrisabdella" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                <a href="https://x.com/EdrisAbdella1" target="_blank"><i class="fab fa-x-twitter"></i> X</a>
+                <a href="https://tiktok.com/@engineeredris.abdella25" target="_blank"><i class="fab fa-tiktok"></i> TikTok</a>
+            </div>
+
+            <div class="credit">
+                Designed &amp; Developed by <strong>Eng. Edris Abdella</strong>
+                &nbsp;·&nbsp; &copy; 2026 EastEdge Engineering
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============================================================ -->
+    <!-- ===== JAVASCRIPT ===== -->
+    <!-- ============================================================ -->
+    <script>
+        // ============================================================
+        // 1. HERO SLIDER
+        // ============================================================
+        const heroImages = [
+            "https://i.ibb.co/HL9wks1p/EASTEDGE-BOQ-CALCULATOR-LOGO.png",
+            "https://i.ibb.co/pjWHBJTL/EASTEDGE-BOQ-LOGO1.png",
+            "https://i.ibb.co/JWsHXkPP/EASTEDGE-ENGINEERING-Page1.png",
+            "https://i.ibb.co/sJDJQNLP/EASTEDGE-ENGINEERING-Page2.png",
+            "https://i.ibb.co/4nH1WPgm/EASTEDGE-ENGINEERING-Page3.png",
+            "https://i.ibb.co/NgV1F4vn/edre.jpg"
+        ];
+
+        let heroIdx = 0;
+        const heroEl = document.getElementById('heroSlider');
+        heroEl.style.backgroundImage = `url('${heroImages[0]}')`;
+
+        setInterval(() => {
+            heroIdx = (heroIdx + 1) % heroImages.length;
+            heroEl.style.backgroundImage = `url('${heroImages[heroIdx]}')`;
+        }, 4800);
+
+        // ============================================================
+        // 2. BOQ DATA & CALCULATION ENGINE
+        // ============================================================
+
+        // ---- Base rates per m² (August 2026) ----
+        const BASE_RATES = {
+            residential: { rc: 28000, steel: 32000, mixed: 30000 },
+            commercial: { rc: 36000, steel: 41000, mixed: 38500 },
+            warehouse: { rc: 22000, steel: 25000, mixed: 23500 },
+            institutional: { rc: 33000, steel: 38000, mixed: 35500 }
+        };
+
+        // ---- Finishing multipliers ----
+        const FINISH_MULT = {
+            '1.00': 1.00,
+            '1.20': 1.20,
+            '0.85': 0.85
+        };
+
+        // ---- City multipliers ----
+        const CITY_MULT = {
+            '1.00': 1.00,
+            '1.05': 1.05,
+            '0.95': 0.95
+        };
+
+        // ---- Floor count adjustment ----
+        function getFloorMultiplier(floors) {
+            if (floors <= 2) return 1.00;
+            if (floors <= 4) return 1.08;
+            if (floors <= 8) return 1.18;
+            return 1.28;
+        }
+
+        // ---- Generate itemized BoQ lines ----
+        function generateBoQItems(buildingType, constructionType, area, floors, finishMult, cityMult) {
+            // Base rate from lookup
+            const baseRate = BASE_RATES[buildingType]?.[constructionType] || BASE_RATES.residential.rc;
+            const floorMult = getFloorMultiplier(floors);
+
+            // Effective base rate per m²
+            const effectiveBase = baseRate * cityMult * finishMult * floorMult;
+
+            // ---- Build item list with percentages (of total) ----
+            // These percentages are typical for Ethiopian construction
+            let items = [];
+
+            // Substructure (foundations, ground beams, etc.)
+            items.push({
+                id: 'S01',
+                desc: 'Substructure – Excavation &amp; Foundation Concrete (C25)',
+                unit: 'm³',
+                pct: 0.18,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'S02',
+                desc: 'Substructure – Reinforcement (Deformed Bars)',
+                unit: 'tonne',
+                pct: 0.12,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'S03',
+                desc: 'Substructure – Formwork &amp; Shuttering',
+                unit: 'm²',
+                pct: 0.06,
+                rateFactor: 1.0
+            });
+
+            // Superstructure
+            items.push({
+                id: 'SS01',
+                desc: 'Superstructure – Columns &amp; Beams Concrete (C30)',
+                unit: 'm³',
+                pct: 0.14,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'SS02',
+                desc: 'Superstructure – Slabs &amp; Stairs Concrete (C30)',
+                unit: 'm³',
+                pct: 0.10,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'SS03',
+                desc: 'Superstructure – Reinforcement (High-Yield)',
+                unit: 'tonne',
+                pct: 0.10,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'SS04',
+                desc: 'Superstructure – Blockwork / Masonry',
+                unit: 'm²',
+                pct: 0.06,
+                rateFactor: 1.0
+            });
+
+            // Finishing
+            items.push({
+                id: 'F01',
+                desc: 'Finishing – Plastering &amp; Rendering (Internal)',
+                unit: 'm²',
+                pct: 0.06,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'F02',
+                desc: 'Finishing – Painting (Emulsion &amp; Enamel)',
+                unit: 'm²',
+                pct: 0.04,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'F03',
+                desc: 'Finishing – Flooring (Tiles / Terrazzo)',
+                unit: 'm²',
+                pct: 0.06,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'F04',
+                desc: 'Finishing – Ceiling &amp; Joinery',
+                unit: 'm²',
+                pct: 0.03,
+                rateFactor: 1.0
+            });
+
+            // MEP
+            items.push({
+                id: 'M01',
+                desc: 'MEP – Electrical Wiring &amp; Fittings',
+                unit: 'm²',
+                pct: 0.05,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'M02',
+                desc: 'MEP – Plumbing &amp; Sanitaryware',
+                unit: 'm²',
+                pct: 0.04,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'M03',
+                desc: 'MEP – HVAC / Ventilation (if applicable)',
+                unit: 'm²',
+                pct: 0.02,
+                rateFactor: 1.0
+            });
+
+            // External works
+            items.push({
+                id: 'E01',
+                desc: 'External – Site Works &amp; Drainage',
+                unit: 'm²',
+                pct: 0.04,
+                rateFactor: 1.0
+            });
+            items.push({
+                id: 'E02',
+                desc: 'External – Fencing &amp; Landscaping',
+                unit: 'm²',
+                pct: 0.02,
+                rateFactor: 1.0
+            });
+
+            // Adjust percentages based on finishing level
+            // Premium finishing increases finishing-related items
+            let finishAdj = 1.0;
+            if (finishMult >= 1.15) finishAdj = 1.25;
+            else if (finishMult <= 0.90) finishAdj = 0.75;
+
+            // Adjust for building type
+            let typeAdj = 1.0;
+            if (buildingType === 'warehouse') typeAdj = 0.85;
+            else if (buildingType === 'commercial') typeAdj = 1.10;
+            else if (buildingType === 'institutional') typeAdj = 1.05;
+
+            // Now compute quantities and amounts
+            const totalCost = area * effectiveBase;
+
+            // Compute per-item amounts
+            let totalPct = 0;
+            items.forEach(item => {
+                let pctAdj = item.pct;
+                // Boost finishing items for premium
+                if (item.desc.includes('Finishing') || item.desc.includes('Plastering') || item.desc.includes(
+                        'Painting') || item.desc.includes('Flooring') || item.desc.includes('Ceiling')) {
+                    pctAdj *= finishAdj;
+                }
+                // Adjust for building type
+                pctAdj *= typeAdj;
+                // Re-normalize later
+                item._rawPct = pctAdj;
+                totalPct += pctAdj;
+            });
+
+            // Normalize so sum = 1.0
+            let totalAmount = 0;
+            items.forEach(item => {
+                const normPct = item._rawPct / totalPct;
+                const amount = totalCost * normPct;
+                item.amount = amount;
+                // Generate quantity: amount / rate (estimate rate based on typical values)
+                // We'll derive rate from amount and a synthetic quantity
+                // For realistic display, we'll set quantity based on area and unit
+                let qty = 0;
+                let rate = 0;
+                const unit = item.unit;
+
+                // Estimate quantity based on area and typical ratios
+                if (unit === 'm³') {
+                    qty = area * 0.08 * (1 + (floors - 1) * 0.06);
+                    if (item.desc.includes('Foundation')) qty = area * 0.10;
+                    if (item.desc.includes('Columns')) qty = area * 0.07 * (1 + (floors - 1) * 0.05);
+                    if (item.desc.includes('Slabs')) qty = area * 0.09 * (1 + (floors - 1) * 0.04);
+                } else if (unit === 'tonne') {
+                    qty = area * 0.035 * (1 + (floors - 1) * 0.03);
+                    if (item.desc.includes('Reinforcement')) qty = area * 0.045 * (1 + (floors - 1) * 0.03);
+                } else if (unit === 'm²') {
+                    qty = area * 1.2 * (1 + (floors - 1) * 0.3);
+                    if (item.desc.includes('Formwork')) qty = area * 1.1 * (1 + (floors - 1) * 0.25);
+                    if (item.desc.includes('Blockwork')) qty = area * 0.8 * (1 + (floors - 1) * 0.2);
+                    if (item.desc.includes('Plastering')) qty = area * 1.8 * (1 + (floors - 1) * 0.3);
+                    if (item.desc.includes('Painting')) qty = area * 1.6 * (1 + (floors - 1) * 0.3);
+                    if (item.desc.includes('Flooring')) qty = area * 0.9;
+                    if (item.desc.includes('Ceiling')) qty = area * 0.9;
+                    if (item.desc.includes('Electrical')) qty = area * 1.0;
+                    if (item.desc.includes('Plumbing')) qty = area * 0.8;
+                    if (item.desc.includes('HVAC')) qty = area * 0.5;
+                    if (item.desc.includes('Site')) qty = area * 0.3;
+                    if (item.desc.includes('Fencing')) qty = area * 0.15;
+                } else {
+                    qty = area * 0.1;
+                }
+
+                // Ensure quantity > 0
+                qty = Math.max(qty, 0.1);
+                rate = amount / qty;
+                // Round
+                qty = Math.round(qty * 100) / 100;
+                rate = Math.round(rate * 100) / 100;
+
+                item.quantity = qty;
+                item.rate = rate;
+                item.amount = Math.round(amount);
+                totalAmount += item.amount;
+            });
+
+            // Adjust last item to absorb rounding
+            if (items.length > 0) {
+                const diff = Math.round(totalCost) - totalAmount;
+                items[items.length - 1].amount += diff;
+                // Recalc rate for last item
+                const last = items[items.length - 1];
+                last.rate = last.quantity > 0 ? Math.round((last.amount / last.quantity) * 100) / 100 : 0;
+            }
+
+            return { items, totalCost: Math.round(totalCost), effectiveBase };
+        }
+
+        // ============================================================
+        // 3. MAIN CALCULATE FUNCTION
+        // ============================================================
+        function calculateBoQ() {
+            // Gather inputs
+            const cityVal = document.getElementById('projectCity').value;
+            const buildingType = document.getElementById('buildingType').value;
+            const area = parseFloat(document.getElementById('totalArea').value);
+            const finishVal = document.getElementById('finishLevel').value;
+            const floors = parseInt(document.getElementById('numFloors').value) || 1;
+            const constructionType = document.getElementById('constructionType').value;
+
+            // Validate
+            if (!area || area <= 0 || isNaN(area)) {
+                alert('Please enter a valid total floor area (positive number).');
+                return;
+            }
+
+            if (floors < 1 || isNaN(floors)) {
+                alert('Please enter a valid number of floors (minimum 1).');
+                return;
+            }
+
+            // Multipliers
+            const cityMult = CITY_MULT[cityVal] || 1.0;
+            const finishMult = FINISH_MULT[finishVal] || 1.0;
+
+            // Generate BoQ
+            const result = generateBoQItems(buildingType, constructionType, area, floors, finishMult, cityMult);
+            const { items, totalCost, effectiveBase } = result;
+
+            // ---- Update Summary Stats ----
+            document.getElementById('totalCostDisplay').innerHTML =
+                totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+                ' <span class="currency">ETB</span>';
+
+            const perSqm = totalCost / area;
+            document.getElementById('costPerSqm').innerHTML =
+                perSqm.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+                ' <span class="currency">ETB</span>';
+
+            const typeLabels = {
+                residential: 'Residential',
+                commercial: 'Commercial',
+                warehouse: 'Warehouse',
+                institutional: 'Institutional'
+            };
+            document.getElementById('buildingTypeDisplay').textContent = typeLabels[buildingType] || buildingType;
+
+            document.getElementById('locationFactorDisplay').textContent = cityMult.toFixed(2);
+
+            // ---- Populate BoQ Table ----
+            const tbody = document.getElementById('boqBody');
+            tbody.innerHTML = '';
+
+            let subtotal = 0;
+            let counter = 1;
+
+            // Group by category
+            const categories = [
+                { key: 'S', label: 'SUBSTRUCTURE', items: [] },
+                { key: 'SS', label: 'SUPERSTRUCTURE', items: [] },
+                { key: 'F', label: 'FINISHING', items: [] },
+                { key: 'M', label: 'MEP (Mechanical, Electrical, Plumbing)', items: [] },
+                { key: 'E', label: 'EXTERNAL WORKS', items: [] }
+            ];
+
+            items.forEach(item => {
+                const code = item.id.substring(0, 2);
+                let cat = categories.find(c => c.key === code);
+                if (!cat) cat = categories[0];
+                cat.items.push(item);
+            });
+
+            // Render categories
+            categories.forEach(cat => {
+                if (cat.items.length === 0) return;
+
+                // Category header row
+                const catRow = document.createElement('tr');
+                catRow.className = 'category-row';
+                catRow.innerHTML = `
+                        <td colspan="6" style="font-size:0.85rem; letter-spacing:0.5px;">
+                            <i class="fas fa-folder-open" style="color:var(--secondary);"></i> ${cat.label}
+                        </td>
+                    `;
+                tbody.appendChild(catRow);
+
+                // Item rows
+                cat.items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const amtFormatted = item.amount.toLocaleString('en-US', { minimumFractionDigits: 2,
+                        maximumFractionDigits: 2 });
+                    const qtyFormatted = item.quantity.toLocaleString('en-US', { minimumFractionDigits: 2,
+                        maximumFractionDigits: 2 });
+                    const rateFormatted = item.rate.toLocaleString('en-US', { minimumFractionDigits: 2,
+                        maximumFractionDigits: 2 });
+
+                    tr.innerHTML = `
+                            <td class="text-center">${counter++}</td>
+                            <td>${item.desc}</td>
+                            <td>${item.unit}</td>
+                            <td class="text-right">${qtyFormatted}</td>
+                            <td class="text-right">${rateFormatted}</td>
+                            <td class="text-right">${amtFormatted}</td>
+                        `;
+                    tbody.appendChild(tr);
+                    subtotal += item.amount;
+                });
+            });
+
+            // ---- Subtotal & Contingency ----
+            const contingency = Math.round(subtotal * 0.05);
+            const grandTotal = subtotal + contingency;
+
+            document.getElementById('subtotalDisplay').textContent = subtotal.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            document.getElementById('contingencyDisplay').textContent = contingency.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            document.getElementById('grandTotalDisplay').textContent = grandTotal.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            // ---- Grand Total row ----
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                    <td colspan="5" style="text-align:right; font-size:1rem;">
+                        <i class="fas fa-check-circle"></i> GRAND TOTAL (incl. 5% contingency)
+                    </td>
+                    <td style="text-align:right; font-size:1.1rem;">
+                        ${grandTotal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}
+                    </td>
+                `;
+            tbody.appendChild(totalRow);
+
+            // ---- Show result & enable export ----
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('exportExcelBtn').disabled = false;
+
+            // Scroll to results
+            document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Store data for export
+            window._lastBoQData = { items, subtotal, contingency, grandTotal, totalCost, perSqm, buildingType, cityMult,
+                finishMult, floors, area };
+        }
+
+        // ============================================================
+        // 4. EXPORT TO EXCEL (using SheetJS)
+        // ============================================================
+        function exportToExcel() {
+            const data = window._lastBoQData;
+            if (!data) {
+                alert('Please generate a BoQ estimate first.');
+                return;
+            }
+
+            const { items, subtotal, contingency, grandTotal, totalCost, perSqm, buildingType, cityMult, finishMult,
+                floors, area } = data;
+
+            // Prepare rows for Excel
+            const rows = [
+                ['EastEdge Engineering BoQ CALCULATOR (EEBCEC)'],
+                ['Professional Ethiopian Construction Cost - August 2026'],
+                [],
+                ['Project Summary'],
+                ['Total Floor Area (m²)', area],
+                ['Number of Floors', floors],
+                ['Building Type', buildingType],
+                ['Location Factor', cityMult],
+                ['Finishing Factor', finishMult],
+                ['Total Estimated Cost (ETB)', totalCost],
+                ['Cost per m² (ETB)', perSqm],
+                [],
+                ['Itemized Bill of Quantities'],
+                ['#', 'Description', 'Unit', 'Quantity', 'Rate (ETB)', 'Amount (ETB)']
+            ];
+
+            let counter = 1;
+            items.forEach(item => {
+                rows.push([
+                    counter++,
+                    item.desc,
+                    item.unit,
+                    item.quantity,
+                    item.rate,
+                    Math.round(item.amount)
+                ]);
+            });
+
+            rows.push([]);
+            rows.push(['Subtotal (ETB)', '', '', '', '', subtotal]);
+            rows.push(['Contingency 5% (ETB)', '', '', '', '', contingency]);
+            rows.push(['GRAND TOTAL (ETB)', '', '', '', '', grandTotal]);
+            rows.push([]);
+            rows.push(['Generated by EastEdge Engineering BoQ Calculator']);
+            rows.push(['Edris & Haykel Construction Partnership PLC']);
+            rows.push(['Pricing base: August 2026']);
+
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+
+            // Column widths
+            ws['!cols'] = [
+                { wch: 8 },
+                { wch: 45 },
+                { wch: 12 },
+                { wch: 14 },
+                { wch: 16 },
+                { wch: 20 }
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, 'BoQ_Estimate');
+
+            // Generate and download
+            const fileName = `BoQ_Estimate_${new Date().toISOString().slice(0,10)}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        // ============================================================
+        // 5. RESET FORM
+        // ============================================================
+        function resetForm() {
+            document.getElementById('totalArea').value = '';
+            document.getElementById('numFloors').value = '4';
+            document.getElementById('projectCity').value = '1.05';
+            document.getElementById('buildingType').value = 'commercial';
+            document.getElementById('finishLevel').value = '1.00';
+            document.getElementById('constructionType').value = 'rc';
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('exportExcelBtn').disabled = true;
+            window._lastBoQData = null;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // 6. KEYBOARD SHORTCUT: Enter to calculate
+        // ============================================================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.closest('.form-group')) {
+                e.preventDefault();
+                calculateBoQ();
+            }
+        });
+
+        // ============================================================
+        // 7. AUTO-CALCULATE on input change (optional)
+        // ============================================================
+        // We'll let the user click Generate, but we can add a debounced auto calc
+        // Not enabling auto to avoid confusion, but we keep it manual.
+
+        console.log('EEBCEC BoQ Calculator loaded. August 2026 pricing.');
+        console.log('Developed by Eng. Edris Abdella for EastEdge Engineering.');
+    </script>
+
+</body>
+</html>
